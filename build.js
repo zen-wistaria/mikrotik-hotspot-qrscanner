@@ -431,8 +431,11 @@ async function copyOtherFiles() {
  */
 async function build() {
   try {
-    await fs.remove(RESULT_DIR);
-    await fs.ensureDir(RESULT_DIR);
+    await fs.remove('css');
+    await fs.remove('js');
+    await fs.remove('index.html');
+
+    // await fs.ensureDir(RESULT_DIR);
 
     console.log('🚀 Build started...\n');
 
