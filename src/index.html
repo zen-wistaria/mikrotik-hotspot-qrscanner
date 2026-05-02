@@ -469,7 +469,7 @@
         html5QrCode = new Html5Qrcode('reader');
 
         const qrboxFunction = (viewfinderWidth, viewfinderHeight) => {
-          const minEdgePercentage = 0.8; // 80%
+          const minEdgePercentage = 1; // 100%
           const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
           const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
           return {
@@ -551,9 +551,20 @@
         await stopCamera();
 
         html5QrCode = new Html5Qrcode('reader');
+        
+        const qrboxFunction = (viewfinderWidth, viewfinderHeight) => {
+          const minEdgePercentage = 1; // 100%
+          const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+          const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+          return {
+            width: qrboxSize,
+            height: qrboxSize,
+          };
+        };
+
         const config = {
           fps: 30,
-          qrbox: { width: 280, height: 280 },
+          qrbox: qrboxFunction ,
           aspectRatio: 4 / 3,
           showTorchButtonIfSupported: true,
         };
