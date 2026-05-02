@@ -443,15 +443,15 @@
           const encryption = encMatch ? encMatch[1] : 'WPA';
 
           displayContent = `📶 <strong>KONFIGURASI HOTSPOT</strong><br>
-                  🔒 Enkripsi: ${encryption}<br>
-                  📡 SSID: ${wifiName}<br>
-                  🔑 Password: ${wifiPass ? wifiPass : '(tanpa password)'}<br>
-                  <span class="text-xs opacity-70">✨ Bukan link, tidak bisa redirect otomatis</span>`;
+                      🔒 Enkripsi: ${encryption}<br>
+                      📡 SSID: ${wifiName}<br>
+                      🔑 Password: ${wifiPass ? wifiPass : '(tanpa password)'}<br>
+                      <span class="text-xs opacity-70">✨ Bukan link, tidak bisa redirect otomatis</span>`;
 
           showNotification(`Hotspot: ${wifiName} berhasil discan`, 'success');
         } else {
           displayContent = `📄 <strong>Data QR (bukan link)</strong><br>${escapeHtml(qrText)}<br>
-                  <span class="text-xs text-amber-500">⚠️ Bukan link yang valid, tidak bisa redirect</span>`;
+                      <span class="text-xs text-amber-500">⚠️ Bukan link yang valid, tidak bisa redirect</span>`;
           showNotification(
             '@config(qrcode.notifications.qrInvalid)',
             'warning'
@@ -489,7 +489,6 @@
     }
 
     // ===================== KAMERA & QR SCANNER =====================
-
     async function loadCameras() {
       try {
         const devices = await Html5Qrcode.getCameras();
@@ -513,6 +512,21 @@
         console.log('Selected camera:', currentCameraId);
       } catch (err) {
         console.error(err);
+      }
+    }
+
+    let currentTrack = null;
+
+    function setupCameraTrack() {
+      const videoElem = document.querySelector('#reader video');
+
+      if (videoElem?.srcObject) {
+        const tracks = videoElem.srcObject.getVideoTracks();
+
+        if (tracks.length > 0) {
+          currentTrack = tracks[0];
+          console.log('Camera track ready');
+        }
       }
     }
 
@@ -540,10 +554,18 @@
           qrbox: qrboxFunction,
           aspectRatio: 4 / 3,
           showTorchButtonIfSupported: true,
+          videoConstraints: {
+            deviceId: { exact: currentCameraId },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            advanced: [{ focusMode: 'continuous' }],
+          },
         };
 
         await html5QrCode.start(
-          { deviceId: { exact: currentCameraId } },
+          {
+            deviceId: { exact: currentCameraId },
+          },
           config,
           (decodedText) => {
             if (decodedText?.trim()) {
@@ -551,6 +573,7 @@
             }
           }
         );
+        setTimeout(setupCameraTrack, 500);
 
         isScanning = true;
         showNotification('@config(qrcode.notifications.camStart)', 'info');
@@ -625,10 +648,18 @@
           qrbox: qrboxFunction,
           aspectRatio: 4 / 3,
           showTorchButtonIfSupported: true,
+          videoConstraints: {
+            deviceId: { exact: currentCameraId },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            advanced: [{ focusMode: 'continuous' }],
+          },
         };
 
         await html5QrCode.start(
-          { deviceId: { exact: currentCameraId } },
+          {
+            deviceId: { exact: currentCameraId },
+          },
           config,
           (decodedText) => {
             if (decodedText && decodedText.trim() !== '') {
@@ -636,6 +667,7 @@
             }
           }
         );
+        setTimeout(setupCameraTrack, 500);
 
         isScanning = true;
         showNotification(
@@ -653,6 +685,32 @@
         }
       }
     }
+
+    const readerElement = document.querySelector('#reader');
+
+    let lastFocusTime = 0;
+
+    readerElement.addEventListener('click', async () => {
+      const now = Date.now();
+      if (now - lastFocusTime < 800) return;
+
+      lastFocusTime = now;
+
+      try {
+        const track = html5QrCode?.getRunningTrack();
+        if (!track) return;
+
+        const capabilities = track.getCapabilities();
+
+        if (capabilities.focusMode) {
+          await track.applyConstraints({
+            advanced: [{ focusMode: 'continuous' }],
+          });
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+    });
 
     // ===================== UPLOAD FILE =====================
     // Drag & Drop
