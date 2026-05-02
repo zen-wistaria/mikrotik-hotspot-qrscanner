@@ -440,7 +440,7 @@
       try {
         const devices = await Html5Qrcode.getCameras();
 
-        devicesList.length = 0; // reset
+        devicesList.length = 0;
         devices.forEach((d) => {
           devicesList.push({
             id: d.id,
@@ -448,14 +448,19 @@
           });
         });
 
-        if (devicesList.length > 0) {
-          currentCameraId = devicesList[0].id;
-        }
+        const backCam = devicesList.find(d =>
+          d.label.toLowerCase().includes('back') ||
+          d.label.toLowerCase().includes('rear')
+        );
 
-        console.log('Camera list:', devicesList);
+        currentCameraId = backCam
+          ? backCam.id
+          : devicesList[0]?.id;
+
+        console.log("Selected camera:", currentCameraId);
+
       } catch (err) {
-        console.error('Gagal ambil kamera:', err);
-        showNotification('Tidak bisa akses kamera', 'error');
+        console.error(err);
       }
     }
 
@@ -486,7 +491,7 @@
         };
 
         await html5QrCode.start(
-          { facingMode: 'environment' },
+          { deviceId: { exact: currentCameraId } },
           config,
           (decodedText) => {
             if (decodedText?.trim()) {
