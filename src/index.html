@@ -202,10 +202,7 @@
       // Theme Management
       const initTheme = () => {
         const savedTheme = localStorage.getItem('hotspot-theme') || 'dark';
-        document.documentElement.classList.toggle(
-          'dark',
-          savedTheme === 'dark'
-        );
+        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
         updateThemeIcon(savedTheme);
         updateBodyTheme(savedTheme);
       };
@@ -398,19 +395,16 @@
           const encryption = encMatch ? encMatch[1] : 'WPA';
 
           displayContent = `📶 <strong>KONFIGURASI HOTSPOT</strong><br>
-          🔒 Enkripsi: ${encryption}<br>
-          📡 SSID: ${wifiName}<br>
-          🔑 Password: ${wifiPass ? wifiPass : '(tanpa password)'}<br>
-          <span class="text-xs opacity-70">✨ Bukan link, tidak bisa redirect otomatis</span>`;
+              🔒 Enkripsi: ${encryption}<br>
+              📡 SSID: ${wifiName}<br>
+              🔑 Password: ${wifiPass ? wifiPass : '(tanpa password)'}<br>
+              <span class="text-xs opacity-70">✨ Bukan link, tidak bisa redirect otomatis</span>`;
 
           showNotification(`Hotspot: ${wifiName} berhasil discan`, 'success');
         } else {
           displayContent = `📄 <strong>Data QR (bukan link)</strong><br>${escapeHtml(qrText)}<br>
-          <span class="text-xs text-amber-500">⚠️ Bukan link yang valid, tidak bisa redirect</span>`;
-          showNotification(
-            '@config(qrcode.notifications.qrInvalid)',
-            'warning'
-          );
+              <span class="text-xs text-amber-500">⚠️ Bukan link yang valid, tidak bisa redirect</span>`;
+          showNotification('@config(qrcode.notifications.qrInvalid)', 'warning');
         }
 
         // resultText.innerHTML = displayContent;
@@ -423,10 +417,7 @@
           copyBtn.innerHTML = '📋 Copy Password';
           copyBtn.onclick = () => {
             navigator.clipboard.writeText(wifiPass);
-            showNotification(
-              'Password hotspot disalin ke clipboard!',
-              'success'
-            );
+            showNotification('Password hotspot disalin ke clipboard!', 'success');
           };
           // redirectContainer.appendChild(copyBtn);
         } else if (!isUrl && !isHotspot && qrText.length > 0) {
@@ -456,7 +447,17 @@
 
         const config = {
           fps: 30,
-          qrbox: { width: 280, height: 280 },
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+            const margin = 100;
+
+            const width = viewfinderWidth - margin;
+            const height = width * (3 / 4); // aspect 4:3
+
+            return {
+              width: width,
+              height: height,
+            };
+          },
           aspectRatio: 4 / 3,
           showTorchButtonIfSupported: true,
         };
@@ -517,9 +518,7 @@
         if (!currentCameraId) {
           nextId = devicesList[0].id;
         } else {
-          const currentIdx = devicesList.findIndex(
-            (d) => d.id === currentCameraId
-          );
+          const currentIdx = devicesList.findIndex((d) => d.id === currentCameraId);
           const nextIdx = (currentIdx + 1) % devicesList.length;
           nextId = devicesList[nextIdx].id;
         }
@@ -547,10 +546,7 @@
         );
 
         isScanning = true;
-        showNotification(
-          `@config(qrcode.notifications.camSwitching)`,
-          'success'
-        );
+        showNotification(`@config(qrcode.notifications.camSwitching)`, 'success');
       } catch (err) {
         console.error('Switch camera error:', err);
         showNotification(
@@ -577,11 +573,7 @@
     // effect when drag in
     ['dragenter', 'dragover'].forEach((eventName) => {
       dropZone.addEventListener(eventName, () => {
-        dropZone.classList.add(
-          'border-neon-blue',
-          'bg-black/5',
-          'dark:bg-white/5'
-        );
+        dropZone.classList.add('border-neon-blue', 'bg-black/5', 'dark:bg-white/5');
       });
     });
 
@@ -703,10 +695,7 @@
       } else if (!isScanning) {
         initAndStartCamera();
       } else {
-        showNotification(
-          '@config(qrcode.notifications.camAlreadyActive)',
-          'info'
-        );
+        showNotification('@config(qrcode.notifications.camAlreadyActive)', 'info');
       }
     });
 
