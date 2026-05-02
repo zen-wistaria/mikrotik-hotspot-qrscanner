@@ -127,7 +127,25 @@
           class="flex flex-col items-center justify-center gap-2 p-4 transition border-2 border-dashed cursor-pointer border-black/10 dark:border-white/10 rounded-2xl hover:border-neon-blue dark:hover:border-neon-blue hover:bg-black/5 dark:hover:bg-white/5"
         >
           <!-- <span class="text-2xl">📂</span> -->
-           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=" text-cyan-500 dark:text-neon-blue"><path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21"/><path d="m14 19.5 3-3 3 3"/><path d="M17 22v-5.5"/><circle cx="9" cy="9" r="2"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class=" text-cyan-500 dark:text-neon-blue"
+          >
+            <path
+              d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21"
+            />
+            <path d="m14 19.5 3-3 3 3" />
+            <path d="M17 22v-5.5" />
+            <circle cx="9" cy="9" r="2" />
+          </svg>
           <span class="text-sm text-slate-500 dark:text-slate-300"
             >@config(qrcode.text.scanFromFile)</span
           >
@@ -148,17 +166,20 @@
         onclick="window.history.back()"
       >
         <svg
-        class="w-4 h-4 transition-transform group-hover:-translate-x-1"
+          class="w-4 h-4 transition-transform group-hover:-translate-x-1"
           xmlns="http://www.w3.org/2000/svg"
           width="24"
           height="24"
           viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        ><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="m12 19-7-7 7-7" />
+          <path d="M19 12H5" />
+        </svg>
         Kembali
       </button>
 
@@ -171,7 +192,9 @@
       <div id="redirectContainer" class="flex flex-wrap justify-end gap-2 mt-3"></div>
     </div> -->
 
-      <footer class="text-center mt-12 text-[9px] uppercase tracking-[0.3em] text-slate-400 dark:text-white/70">
+      <footer
+        class="text-center mt-12 text-[9px] uppercase tracking-[0.3em] text-slate-400 dark:text-white/70"
+      >
         @config(qrcode.footer)
       </footer>
     </div>
@@ -202,7 +225,10 @@
       // Theme Management
       const initTheme = () => {
         const savedTheme = localStorage.getItem('hotspot-theme') || 'dark';
-        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+        document.documentElement.classList.toggle(
+          'dark',
+          savedTheme === 'dark'
+        );
         updateThemeIcon(savedTheme);
         updateBodyTheme(savedTheme);
       };
@@ -262,11 +288,36 @@
       return `py-3 px-4 w-full rounded-lg font-medium flex items-center gap-3 text-sm backdrop-blur-md border-l-4 animate-slide-in ${styles[type] || styles.info}`;
     }
 
+    const notifCache = new Map();
+
     function showNotification(message, type = 'info') {
+      const key = `${type}:${message}`;
+      const now = Date.now();
+
+      const TTL = type === 'error' ? 4000 : 3000;
+
+      // prevent duplicate notif
+      if (notifCache.has(key)) {
+        const lastTime = notifCache.get(key);
+        if (now - lastTime < TTL) {
+          return;
+        }
+      }
+
+      // store last time
+      notifCache.set(key, now);
+
+      // cleanup cache
+      setTimeout(() => {
+        notifCache.delete(key);
+      }, TTL);
+
+      // ================= UI =================
       if (notifContainer.classList.contains('hidden')) {
         notifContainer.classList.remove('hidden');
         notifContainer.classList.add('flex');
       }
+
       const notif = document.createElement('div');
       notif.className = getNotificationStyle(type);
 
@@ -280,38 +331,35 @@
               : 'ℹ️';
 
       notif.innerHTML = `<span>${icon}</span> ${message}`;
-
       notifContainer.prepend(notif);
 
       // remove notif
-      setTimeout(
-        () => {
-          notif.classList.add(
-            'opacity-0',
-            'translate-y-2',
-            'transition-all',
-            'duration-300'
-          );
+      setTimeout(() => {
+        notif.classList.add(
+          'opacity-0',
+          'translate-y-2',
+          'transition-all',
+          'duration-300'
+        );
 
-          setTimeout(() => {
-            notif.remove();
-            if (notifContainer.children.length === 0) {
-              notifContainer.classList.add('hidden');
-            }
-          }, 300);
-        },
-        type === 'error' ? 4000 : 2800
-      );
+        setTimeout(() => {
+          notif.remove();
+          if (notifContainer.children.length === 0) {
+            notifContainer.classList.add('hidden');
+          }
+        }, 300);
+      }, TTL);
 
       // remove when click
       notif.addEventListener('click', () => {
         notif.remove();
+        notifCache.delete(key); // 🔥 reset juga cache
         if (notifContainer.children.length === 0) {
           notifContainer.classList.add('hidden');
         }
       });
 
-      // maximum 4 notifs
+      // max 4 notif
       const maxNotif = 4;
       if (notifContainer.children.length > maxNotif) {
         notifContainer.removeChild(notifContainer.lastChild);
@@ -404,7 +452,10 @@
         } else {
           displayContent = `📄 <strong>Data QR (bukan link)</strong><br>${escapeHtml(qrText)}<br>
                   <span class="text-xs text-amber-500">⚠️ Bukan link yang valid, tidak bisa redirect</span>`;
-          showNotification('@config(qrcode.notifications.qrInvalid)', 'warning');
+          showNotification(
+            '@config(qrcode.notifications.qrInvalid)',
+            'warning'
+          );
         }
 
         // resultText.innerHTML = displayContent;
@@ -417,7 +468,10 @@
           copyBtn.innerHTML = '📋 Copy Password';
           copyBtn.onclick = () => {
             navigator.clipboard.writeText(wifiPass);
-            showNotification('Password hotspot disalin ke clipboard!', 'success');
+            showNotification(
+              'Password hotspot disalin ke clipboard!',
+              'success'
+            );
           };
           // redirectContainer.appendChild(copyBtn);
         } else if (!isUrl && !isHotspot && qrText.length > 0) {
@@ -448,17 +502,15 @@
           });
         });
 
-        const backCam = devicesList.find(d =>
-          d.label.toLowerCase().includes('back') ||
-          d.label.toLowerCase().includes('rear')
+        const backCam = devicesList.find(
+          (d) =>
+            d.label.toLowerCase().includes('back') ||
+            d.label.toLowerCase().includes('rear')
         );
 
-        currentCameraId = backCam
-          ? backCam.id
-          : devicesList[0]?.id;
+        currentCameraId = backCam ? backCam.id : devicesList[0]?.id;
 
-        console.log("Selected camera:", currentCameraId);
-
+        console.log('Selected camera:', currentCameraId);
       } catch (err) {
         console.error(err);
       }
@@ -485,7 +537,7 @@
 
         const config = {
           fps: 30,
-          qrbox: qrboxFunction ,
+          qrbox: qrboxFunction,
           aspectRatio: 4 / 3,
           showTorchButtonIfSupported: true,
         };
@@ -545,7 +597,9 @@
         if (!currentCameraId) {
           nextId = devicesList[0].id;
         } else {
-          const currentIdx = devicesList.findIndex((d) => d.id === currentCameraId);
+          const currentIdx = devicesList.findIndex(
+            (d) => d.id === currentCameraId
+          );
           const nextIdx = (currentIdx + 1) % devicesList.length;
           nextId = devicesList[nextIdx].id;
         }
@@ -555,7 +609,7 @@
         await stopCamera();
 
         html5QrCode = new Html5Qrcode('reader');
-        
+
         const qrboxFunction = (viewfinderWidth, viewfinderHeight) => {
           const minEdgePercentage = 1; // 100%
           const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
@@ -568,7 +622,7 @@
 
         const config = {
           fps: 30,
-          qrbox: qrboxFunction ,
+          qrbox: qrboxFunction,
           aspectRatio: 4 / 3,
           showTorchButtonIfSupported: true,
         };
@@ -584,7 +638,10 @@
         );
 
         isScanning = true;
-        showNotification(`@config(qrcode.notifications.camSwitching)`, 'success');
+        showNotification(
+          `@config(qrcode.notifications.camSwitching)`,
+          'success'
+        );
       } catch (err) {
         console.error('Switch camera error:', err);
         showNotification(
@@ -611,7 +668,11 @@
     // effect when drag in
     ['dragenter', 'dragover'].forEach((eventName) => {
       dropZone.addEventListener(eventName, () => {
-        dropZone.classList.add('border-neon-blue', 'bg-black/5', 'dark:bg-white/5');
+        dropZone.classList.add(
+          'border-neon-blue',
+          'bg-black/5',
+          'dark:bg-white/5'
+        );
       });
     });
 
@@ -678,10 +739,7 @@
         }
       } catch (err) {
         console.error('Scan file error:', err);
-        showNotification(
-          `@config(qrcode.notifications.qrNotFound)`,
-          'error'
-        );
+        showNotification(`@config(qrcode.notifications.qrNotFound)`, 'error');
         // resultCard.style.display = "none";
       } finally {
         try {
@@ -734,7 +792,10 @@
       } else if (!isScanning) {
         initAndStartCamera();
       } else {
-        showNotification('@config(qrcode.notifications.camAlreadyActive)', 'info');
+        showNotification(
+          '@config(qrcode.notifications.camAlreadyActive)',
+          'info'
+        );
       }
     });
 
