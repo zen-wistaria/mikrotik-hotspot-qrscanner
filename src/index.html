@@ -202,7 +202,10 @@
       // Theme Management
       const initTheme = () => {
         const savedTheme = localStorage.getItem('hotspot-theme') || 'dark';
-        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+        document.documentElement.classList.toggle(
+          'dark',
+          savedTheme === 'dark'
+        );
         updateThemeIcon(savedTheme);
         updateBodyTheme(savedTheme);
       };
@@ -404,7 +407,10 @@
         } else {
           displayContent = `📄 <strong>Data QR (bukan link)</strong><br>${escapeHtml(qrText)}<br>
               <span class="text-xs text-amber-500">⚠️ Bukan link yang valid, tidak bisa redirect</span>`;
-          showNotification('@config(qrcode.notifications.qrInvalid)', 'warning');
+          showNotification(
+            '@config(qrcode.notifications.qrInvalid)',
+            'warning'
+          );
         }
 
         // resultText.innerHTML = displayContent;
@@ -417,7 +423,10 @@
           copyBtn.innerHTML = '📋 Copy Password';
           copyBtn.onclick = () => {
             navigator.clipboard.writeText(wifiPass);
-            showNotification('Password hotspot disalin ke clipboard!', 'success');
+            showNotification(
+              'Password hotspot disalin ke clipboard!',
+              'success'
+            );
           };
           // redirectContainer.appendChild(copyBtn);
         } else if (!isUrl && !isHotspot && qrText.length > 0) {
@@ -436,6 +445,29 @@
 
     // ===================== KAMERA & QR SCANNER =====================
 
+    async function loadCameras() {
+      try {
+        const devices = await Html5Qrcode.getCameras();
+
+        devicesList.length = 0; // reset
+        devices.forEach((d) => {
+          devicesList.push({
+            id: d.id,
+            label: d.label,
+          });
+        });
+
+        if (devicesList.length > 0) {
+          currentCameraId = devicesList[0].id;
+        }
+
+        console.log('Camera list:', devicesList);
+      } catch (err) {
+        console.error('Gagal ambil kamera:', err);
+        showNotification('Tidak bisa akses kamera', 'error');
+      }
+    }
+
     async function initAndStartCamera() {
       if (html5QrCode && isScanning) return;
 
@@ -447,17 +479,17 @@
 
         const config = {
           fps: 30,
-          qrbox: (viewfinderWidth, viewfinderHeight) => {
-            const margin = 100;
+          // qrbox: (viewfinderWidth) => {
+          //   const margin = 100;
 
-            const width = viewfinderWidth - margin;
-            const height = width * (3 / 4); // aspect 4:3
+          //   const width = viewfinderWidth - margin;
+          //   const height = width * (3 / 4); // aspect 4:3
 
-            return {
-              width: width,
-              height: height,
-            };
-          },
+          //   return {
+          //     width: width,
+          //     height: height,
+          //   };
+          // },
           aspectRatio: 4 / 3,
           showTorchButtonIfSupported: true,
         };
@@ -518,7 +550,9 @@
         if (!currentCameraId) {
           nextId = devicesList[0].id;
         } else {
-          const currentIdx = devicesList.findIndex((d) => d.id === currentCameraId);
+          const currentIdx = devicesList.findIndex(
+            (d) => d.id === currentCameraId
+          );
           const nextIdx = (currentIdx + 1) % devicesList.length;
           nextId = devicesList[nextIdx].id;
         }
@@ -546,7 +580,10 @@
         );
 
         isScanning = true;
-        showNotification(`@config(qrcode.notifications.camSwitching)`, 'success');
+        showNotification(
+          `@config(qrcode.notifications.camSwitching)`,
+          'success'
+        );
       } catch (err) {
         console.error('Switch camera error:', err);
         showNotification(
@@ -573,7 +610,11 @@
     // effect when drag in
     ['dragenter', 'dragover'].forEach((eventName) => {
       dropZone.addEventListener(eventName, () => {
-        dropZone.classList.add('border-neon-blue', 'bg-black/5', 'dark:bg-white/5');
+        dropZone.classList.add(
+          'border-neon-blue',
+          'bg-black/5',
+          'dark:bg-white/5'
+        );
       });
     });
 
@@ -695,16 +736,20 @@
       } else if (!isScanning) {
         initAndStartCamera();
       } else {
-        showNotification('@config(qrcode.notifications.camAlreadyActive)', 'info');
+        showNotification(
+          '@config(qrcode.notifications.camAlreadyActive)',
+          'info'
+        );
       }
     });
 
     // ===================== INITIALIZATION =====================
     let initialized = false;
 
-    window.addEventListener('load', () => {
+    window.addEventListener('load', async () => {
       if (!initialized) {
         initialized = true;
+        await loadCameras();
         setTimeout(() => {
           initAndStartCamera().catch((err) => {
             console.error('Init camera failed:', err);
