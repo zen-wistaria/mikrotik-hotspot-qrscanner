@@ -84,6 +84,11 @@
     @apply text-sm font-extrabold;
     color: #00d2ff;
   }
+  
+  .preview-stage {
+    backdrop-filter: blur(4px);
+    background-color: rgba(0, 0, 0, 0.6);
+  }
 }
 
 /* utilities (custom animation & bg) */
