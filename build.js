@@ -380,7 +380,7 @@ async function processHTMLFiles(cssFileName, jsMapping) {
       content = content.replace(
         new RegExp(`(src=["'])(\\.{1,2}\\/)*${escaped}(["'])`, 'g'),
         (_match, p1, p2, p3) => {
-          return `${p1}${p2 || ""}${newRef}${p3}`;
+          return `${p1}${p2 || ''}${newRef}${p3}`;
         }
       );
     }
@@ -394,10 +394,9 @@ async function processHTMLFiles(cssFileName, jsMapping) {
     content = await processIncludes(baseDir, content, config);
 
     const minified = await minifyHTML(content);
-
     const dest = path.join(RESULT_DIR, path.relative(SRC_DIR, file));
 
-    await fs.ensureDir(path.dirname(dest));
+    // await fs.ensureDir(path.dirname(dest));
     await fs.writeFile(dest, minified);
 
     console.log(`✅ ${dest}`);
@@ -421,7 +420,7 @@ async function copyOtherFiles() {
 
   for (const file of files) {
     const dest = path.join(RESULT_DIR, path.relative(SRC_DIR, file));
-    await fs.ensureDir(path.dirname(dest));
+    // await fs.ensureDir(path.dirname(dest));
     await fs.copy(file, dest);
   }
 }
