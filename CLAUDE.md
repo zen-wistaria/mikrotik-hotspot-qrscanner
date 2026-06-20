@@ -6,6 +6,8 @@ QR Code scanner page for MikroTik Hotspot login. Single-page app — scan QR vou
 
 Nama package: `hotspot_template_by_zen` (sama kayak `mikrotik_hotspot`, beda proyek).
 
+**Theme:** Retro modern monochrome (black & white) — match `mikrotik_hotspot`. Font Orbitron, zero neon colors.
+
 ## Tech Stack
 
 - **Runtime:** Bun (npm also works)
@@ -15,6 +17,7 @@ Nama package: `hotspot_template_by_zen` (sama kayak `mikrotik_hotspot`, beda pro
 - **Library:** Html5Qrcode (built into `src/js/qrcode.js`, 375KB)
 - **JS Minifier:** UglifyJS
 - **HTML Minifier:** html-minifier-terser
+- **Font:** Orbitron Medium (WOFF2, offline di `src/fonts/orbitron-medium.woff2`)
 
 ## Project Structure
 
@@ -23,10 +26,12 @@ mikrotik-hotspot-qrscanner/
 ├── src/
 │   ├── index.html          # Source HTML (with @config, @if directives)
 │   ├── css/
-│   │   ├── input.css       # Tailwind input
+│   │   ├── input.css       # Tailwind input + @font-face Orbitron + keyframes
 │   │   └── style.css       # Compiled Tailwind
-│   └── js/
-│       └── qrcode.js       # Html5Qrcode library (375KB — DO NOT MODIFY)
+│   ├── js/
+│   │   └── qrcode.js       # Html5Qrcode library (375KB — DO NOT MODIFY)
+│   └── fonts/
+│       └── orbitron-medium.woff2  # Orbitron font (6.6KB)
 ├── index.html              # Built output (overwritten by build)
 ├── css/                    # Built CSS output
 ├── js/                     # Built JS output
@@ -73,6 +78,22 @@ Build pipeline:
 4. Process `src/index.html`: config directives → minify → write to root `index.html`
 5. Copy `src/css/*`, `src/js/*` to root (other assets)
 
+## Theme — Retro Modern Monochrome
+
+| Element | Light Mode | Dark Mode |
+|---------|-----------|-----------|
+| Background | `bg-white` | `bg-black` |
+| Card wrapper | `border border-black bg-white` | `border border-white bg-black` |
+| Primary btn | `bg-black text-white hover:bg-gray-900` | `bg-white text-black hover:bg-gray-200` |
+| Secondary btn | `border border-black text-black hover:bg-black hover:text-white` | `border border-white text-white hover:bg-white hover:text-black` |
+| Camera buttons | secondary style (border) | same |
+| Drop zone | `border-2 border-dashed border-black` | `border-2 border-dashed border-white` |
+| Scan line | `bg-black` | `bg-white` |
+| Text muted | `text-gray-500` | `text-gray-400` |
+| SVG icons | `text-current` or `text-black` | `text-current` or `text-white` |
+| Error | `text-red-600 border-red-500` | `text-red-400 border-red-500` |
+| Font | `font-orbitron` | same |
+
 ## Page Features
 
 - Live camera QR scanning (Html5Qrcode)
@@ -80,8 +101,8 @@ Build pipeline:
 - Camera switching (front/back)
 - Open-in-Chrome button for Android
 - Auto-redirect when valid hotspot login URL detected
-- Dark/light theme toggle
-- Notification system with dedup
+- Dark/light theme toggle (monochrome SVG icons: sun/moon)
+- Notification system with dedup — SVG icons instead of emoji (checkmark, X, warning, info)
 
 ## Important Notes for Claude
 
@@ -91,7 +112,11 @@ Build pipeline:
 - This is a SINGLE-PAGE app — only `index.html`
 - Cached files (`style.{hash}.css`, `qrcode.{hash}.css`) in root are gitignored by `.gitignore`
 - Source is in `src/index.html`, not `index.html`
-- Same `config.json` template engine (processConfigDirectives, processIfDirectives) as the hotspot template
+- Font Orbitron dari `src/fonts/orbitron-medium.woff2` — 1 weight only (Medium 500), ~6.6KB
+- `tailwind.config.js` — no custom colors, only `fontFamily.orbitron` dan animations
+- `src/css/input.css` — minimal: `@tailwind` directives + `@font-face` + keyframes (fadeInUp, float)
+- Theme JS inline di `src/index.html` — body class references: `bg-white`/`bg-black`, `text-black`/`text-white`
+- Notification SVG icons in JS: success (check circle), error (X circle), warning (triangle), info (info circle) — all `stroke="currentColor"` biar adaptif warna
 
 ## Code Quality
 
