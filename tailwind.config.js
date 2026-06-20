@@ -4,7 +4,17 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        orbitron: ['Orbitron', 'sans-serif'],
+        space: ['Space Grotesk', 'sans-serif'],
+        outfit: ['Outfit', 'sans-serif'],
+      },
+      boxShadow: {
+        brutal: '4px 4px 0px 0px rgba(24,24,27,1)',
+        'brutal-sm': '2px 2px 0px 0px rgba(24,24,27,1)',
+        'brutal-dark': '4px 4px 0px 0px rgba(229,231,235,1)',
+        'brutal-sm-dark': '2px 2px 0px 0px rgba(229,231,235,1)',
+        'brutal-red': '4px 4px 0px 0px rgba(239,68,68,1)',
+        'brutal-yellow': '4px 4px 0px 0px rgba(234,179,8,1)',
+        'brutal-green': '4px 4px 0px 0px rgba(34,197,94,1)',
       },
       animation: {
         'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
